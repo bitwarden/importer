@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Bit.Importer.MainPage">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Spacing="50"
+            Padding="20"
+            VerticalOptions="Start">
+
+            <VerticalStackLayout
+                Spacing="10"
+                Padding="0">
+                <Label
+                    Text="The Bitwarden Importer Tool helps you easily move all of your data from an existing password management service into your Bitwarden account. Simply imput your credentials for Bitwarden and your old password management service into the form below and click the 'Import' button." />
+                <Label
+                    Text="Click here to learn more"
+                    TextColor="{StaticResource Primary}"
+                    FontAttributes="Bold"
+                    TextDecorations="Underline"
+                    x:Name="LearnMore" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout
+                Spacing="20"
+                Padding="0">
+                <VerticalStackLayout
+                    Spacing="5"
+                    Padding="0">
+                    <Label
+                        Text="Bitwarden Server Url" />
+                    <Entry
+                        x:Name="BitwardenServerUrl" />
+                </VerticalStackLayout>
+                <VerticalStackLayout
+                    Spacing="5"
+                    Padding="0">
+                    <HorizontalStackLayout
+                        Spacing="10">
+                        <Label
+                            Text="Bitwarden API Key client_id" />
+                        <Label
+                            Text="Click here to get your API key"
+                            TextColor="{StaticResource Primary}"
+                            FontAttributes="Bold"
+                            TextDecorations="Underline"
+                            x:Name="ApiKeyLink1" />
+                    </HorizontalStackLayout>
+                    <Entry
+                        x:Name="BitwardenApiKeyClientId" />
+                </VerticalStackLayout>
+                <VerticalStackLayout
+                    Spacing="5"
+                    Padding="0">
+                    <HorizontalStackLayout
+                        Spacing="10">
+                        <Label
+                            Text="Bitwarden API Key secret" />
+                        <Label
+                            Text="Click here to get your API key"
+                            TextColor="{StaticResource Primary}"
+                            FontAttributes="Bold"
+                            TextDecorations="Underline"
+                            x:Name="ApiKeyLink2"/>
+                    </HorizontalStackLayout>
+                    <Entry
+                        x:Name="BitwardenApiKeySecret"
+                        IsPassword="True" />
+                </VerticalStackLayout>
+                <VerticalStackLayout
+                    Spacing="5"
+                    Padding="0"
+                    x:Name="BitwardenPasswordLayout">
+                    <Label
+                        Text="Bitwarden Master Password" />
+                    <Entry
+                        x:Name="BitwardenPassword"
+                        IsPassword="True" />
+                </VerticalStackLayout>
+                <HorizontalStackLayout
+                    x:Name="BitwardenKeyConnectorLayout">
+                    <CheckBox
+                        x:Name="BitwardenKeyConnector"
+                        CheckedChanged="BitwardenKeyConnector_CheckedChanged"
+                        VerticalOptions="Center" />
+                    <Label
+                        x:Name="BitwardenKeyConnectorLabel"
+                        Text="My organization uses a SSO configuration that does not require a master password."
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout
+                Spacing="20"
+                Padding="0">
+                <VerticalStackLayout
+                    Spacing="5"
+                    Padding="0">
+                    <Label
+                        Text="Import From Service" />
+                    <Picker
+                        x:Name="Service" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout
+                    Spacing="5"
+                    Padding="0">
+                    <Label
+                        Text="LastPass Email" />
+                    <Entry
+                        x:Name="LastPassEmail" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout
+                    Spacing="5"
+                    Padding="0">
+                    <Label
+                        Text="LastPass Master Password" />
+                    <Entry
+                        x:Name="LastPassPassword"
+                        IsPassword="True" />
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <HorizontalStackLayout
+                Spacing="10"
+                Padding="0">
+                <Button
+                    x:Name="SubmitButton"
+                    Text="Import"
+                    Clicked="OnButtonClicked"
+                    HorizontalOptions="Center" />
+                <ActivityIndicator
+                    x:Name="Loading"
+                    IsRunning="false"
+                    VerticalOptions="Center" />
+                <Label
+                    x:Name="PleaseWait"
+                    Text="Please wait..."
+                    IsVisible="false"
+                    VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
