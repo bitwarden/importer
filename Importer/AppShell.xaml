@@ -8,7 +8,6 @@
 
     <ShellContent
         Title="Bitwarden Importer"
-        Icon="icon.svg"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
 
