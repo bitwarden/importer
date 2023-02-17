@@ -13,7 +13,7 @@
                 Spacing="10"
                 Padding="0">
                 <Label
-                    Text="The Bitwarden Importer Tool helps you easily move all of your data from an existing password management service into your Bitwarden account. Simply imput your credentials for Bitwarden and your old password management service into the form below and click the 'Import' button." />
+                    Text="The Bitwarden Importer Tool helps you easily move all of your data from an existing password management service into your Bitwarden account. Simply input your credentials for Bitwarden and your old password management service into the form below and click the 'Import' button." />
                 <Label
                     Text="Click here to learn more"
                     TextColor="{StaticResource Primary}"
