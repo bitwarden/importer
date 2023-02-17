@@ -7,11 +7,14 @@ namespace Bit.Importer;
 
 public partial class MainPage : ContentPage
 {
+    private readonly string _cacheDir;
     private readonly List<string> _services = new() { "LastPass" };
     private string _bitwardenCloudUrl = "https://bitwarden.com";
 
     public MainPage()
     {
+        _cacheDir = Path.Combine(FileSystem.CacheDirectory, "com.bitwarden.importer");
+
         InitializeComponent();
 
         BitwardenServerUrl.Text = _bitwardenCloudUrl;
@@ -35,7 +38,7 @@ public partial class MainPage : ContentPage
         ApiKeyLink1.GestureRecognizers.Add(apiKeyTap);
         ApiKeyLink2.GestureRecognizers.Add(apiKeyTap);
 
-        CachePath.Text = FileSystem.CacheDirectory;
+        CachePath.Text = _cacheDir;
     }
 
     private void BitwardenKeyConnector_CheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -92,6 +95,7 @@ public partial class MainPage : ContentPage
 
     private async Task ImportAsync()
     {
+        await SetupAsync();
         await CleanupAsync();
 
         if (_services[Service.SelectedIndex] == "LastPass")
@@ -207,9 +211,9 @@ public partial class MainPage : ContentPage
             csv.WriteRecords(exportAccounts);
             csv.Flush();
             var csvOutput = writer.ToString();
-            // Write CSV to temp disk
 
-            var lastpassCsvPath = Path.Combine(FileSystem.CacheDirectory, "lastpass-export.csv");
+            // Write CSV to temp disk
+            var lastpassCsvPath = Path.Combine(_cacheDir, "lastpass-export.csv");
             await File.WriteAllTextAsync(lastpassCsvPath, csvOutput);
             return (true, lastpassCsvPath);
         }
@@ -279,7 +283,7 @@ public partial class MainPage : ContentPage
         };
 
         // Load standard env vars for this use case
-        process.StartInfo.EnvironmentVariables["BITWARDENCLI_APPDATA_DIR"] = FileSystem.CacheDirectory;
+        process.StartInfo.EnvironmentVariables["BITWARDENCLI_APPDATA_DIR"] = _cacheDir;
         process.StartInfo.EnvironmentVariables["BW_NOINTERACTION"] = "true";
         processAction?.Invoke(process);
 
@@ -297,13 +301,22 @@ public partial class MainPage : ContentPage
     private string ResolveCliPath()
     {
         var bwCliFilename = DeviceInfo.Platform == DevicePlatform.WinUI ? "bw.exe" : "bw";
-        return Path.Combine(FileSystem.CacheDirectory, bwCliFilename);
+        return Path.Combine(_cacheDir, bwCliFilename);
     }
 
     private Task CleanupAsync()
     {
-        File.Delete(Path.Combine(FileSystem.CacheDirectory, "data.json"));
-        File.Delete(Path.Combine(FileSystem.CacheDirectory, "lastpass-export.csv"));
+        File.Delete(Path.Combine(_cacheDir, "data.json"));
+        File.Delete(Path.Combine(_cacheDir, "lastpass-export.csv"));
+        return Task.FromResult(0);
+    }
+
+    private Task SetupAsync()
+    {
+        if (!Directory.Exists(_cacheDir))
+        {
+            Directory.CreateDirectory(_cacheDir);
+        }
         return Task.FromResult(0);
     }
 }
