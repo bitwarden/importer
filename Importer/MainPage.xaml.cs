@@ -34,6 +34,8 @@ public partial class MainPage : ContentPage
         };
         ApiKeyLink1.GestureRecognizers.Add(apiKeyTap);
         ApiKeyLink2.GestureRecognizers.Add(apiKeyTap);
+
+        CachePath.Text = FileSystem.CacheDirectory;
     }
 
     private void BitwardenKeyConnector_CheckedChanged(object sender, CheckedChangedEventArgs e)

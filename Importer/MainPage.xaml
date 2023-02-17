@@ -142,6 +142,8 @@
                     VerticalOptions="Center" />
             </HorizontalStackLayout>
 
+            <Label
+                x:Name="CachePath" />
         </VerticalStackLayout>
     </ScrollView>
 
