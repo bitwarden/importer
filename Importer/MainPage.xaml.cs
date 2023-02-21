@@ -259,7 +259,8 @@ public partial class MainPage : ContentPage
     private async Task SetupCliAsync()
     {
         // Copy packaged CLI app to disk so that we can invoke it.
-        using var stream = await FileSystem.OpenAppPackageFileAsync("bw-cli/bw-windows.exe");
+        var cliFilename = DeviceInfo.Platform == DevicePlatform.WinUI ? "bw-windows.exe" : "bw-mac";
+        using var stream = await FileSystem.OpenAppPackageFileAsync($"bw-cli/{cliFilename}");
         using var fileStream = File.Create(ResolveCliPath());
         stream.Seek(0, SeekOrigin.Begin);
         stream.CopyTo(fileStream);
