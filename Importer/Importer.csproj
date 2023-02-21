@@ -8,6 +8,8 @@
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DefaultLanguage>en</DefaultLanguage>
+    <AssemblyName>Bitwarden Importer</AssemblyName>
 
     <!-- Display name -->
     <ApplicationTitle>Bitwarden Importer</ApplicationTitle>
@@ -28,7 +30,6 @@
   <!-- Workaround from here: https://github.com/dotnet/maui/issues/12080#issuecomment-1398635826 -->
   <PropertyGroup>
     <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
-    <DefaultLanguage>en</DefaultLanguage>
   </PropertyGroup>
 
   <ItemGroup>
