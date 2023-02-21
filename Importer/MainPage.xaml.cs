@@ -39,6 +39,7 @@ public partial class MainPage : ContentPage
         ApiKeyLink2.GestureRecognizers.Add(apiKeyTap);
 
         CachePath.Text = _cacheDir;
+        ParseCommandlineDefaults();
     }
 
     private void BitwardenKeyConnector_CheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -344,5 +345,65 @@ public partial class MainPage : ContentPage
         };
         process.Start();
         process.WaitForExit();
+    }
+
+    private void ParseCommandlineDefaults()
+    {
+        var args = Environment.GetCommandLineArgs();
+        foreach (var arg in args)
+        {
+            if (!arg.Contains("="))
+            {
+                continue;
+            }
+
+            var argParts = arg.Split('=');
+            if (argParts.Length < 2)
+            {
+                continue;
+            }
+
+            if (argParts[0] == "bitwardenServerUrl")
+            {
+                BitwardenServerUrl.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "bitwardenApiKeyClientId")
+            {
+                BitwardenApiKeyClientId.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "bitwardenApiKeySecret")
+            {
+                BitwardenApiKeySecret.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "bitwardenMasterPassword")
+            {
+                BitwardenPassword.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "bitwardenKeyConnector")
+            {
+                BitwardenKeyConnector.IsChecked = argParts[1] == "1";
+                continue;
+            }
+
+            if (argParts[0] == "lastpassEmail")
+            {
+                LastPassEmail.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "lastpassMasterPassword")
+            {
+                LastPassPassword.Text = argParts[1];
+                continue;
+            }
+        }
     }
 }

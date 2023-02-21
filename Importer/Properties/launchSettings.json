@@ -3,6 +3,11 @@
     "Windows Machine": {
       "commandName": "MsixPackage",
       "nativeDebugging": false
+    },
+    "Command args": {
+      "commandName": "MsixPackage",
+      "commandLineArgs": "bitwardenServerUrl=https://myserver.com bitwardenApiKeyClientId=123 bitwardenApiKeySecret=abc bitwardenMasterPassword=mypass bitwardenKeyConnector=1",
+      "nativeDebugging": false
     }
   }
 }
