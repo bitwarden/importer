@@ -158,6 +158,7 @@ public partial class MainPage : ContentPage
                     if (importSuccess)
                     {
                         StopLoadingAndAlert(false, "Your import was successful!");
+                        ClearInputs();
                     }
                     else
                     {
@@ -345,6 +346,17 @@ public partial class MainPage : ContentPage
         };
         process.Start();
         process.WaitForExit();
+    }
+
+    private void ClearInputs()
+    {
+        BitwardenServerUrl.Text = string.Empty;
+        BitwardenApiKeyClientId.Text = string.Empty;
+        BitwardenApiKeySecret.Text = string.Empty;
+        BitwardenKeyConnector.IsChecked = false;
+        BitwardenPassword.Text = string.Empty;
+        LastPassEmail.Text = string.Empty;
+        LastPassPassword.Text = string.Empty;
     }
 
     private void ParseCommandlineDefaults()
