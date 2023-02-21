@@ -259,19 +259,25 @@ public partial class MainPage : ContentPage
     private async Task SetupCliAsync()
     {
         // Copy packaged CLI app to disk so that we can invoke it.
-        var cliFilename = DeviceInfo.Platform == DevicePlatform.WinUI ? "bw-windows.exe" : "bw-mac";
+        var isWindows = DeviceInfo.Platform == DevicePlatform.WinUI;
+        var cliFilename = isWindows ? "bw-windows.exe" : "bw-mac";
+        var cliPath = ResolveCliPath();
         using var stream = await FileSystem.OpenAppPackageFileAsync($"bw-cli/{cliFilename}");
-        using var fileStream = File.Create(ResolveCliPath());
+        using var fileStream = File.Create(cliPath);
         stream.Seek(0, SeekOrigin.Begin);
         stream.CopyTo(fileStream);
         stream.Close();
         fileStream.Close();
+        if (!isWindows)
+        {
+            ExecBash($"chmod +x {cliPath}");
+        }
     }
 
     private (int, string) ExecCli(string args, Action<Process> processAction = null)
     {
         // Set up the process
-        var process = new Process
+        using var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
@@ -319,5 +325,24 @@ public partial class MainPage : ContentPage
             Directory.CreateDirectory(_cacheDir);
         }
         return Task.FromResult(0);
+    }
+
+    public static void ExecBash(string cmd)
+    {
+        var escapedArgs = cmd.Replace("\"", "\\\"");
+        using var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                FileName = "/bin/bash",
+                Arguments = $"-c \"{escapedArgs}\""
+            }
+        };
+        process.Start();
+        process.WaitForExit();
     }
 }
