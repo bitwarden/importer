@@ -4,3 +4,15 @@ Bitwarden standalone importer tool that can be used to import individual vaults 
 
 
 ![image](https://user-images.githubusercontent.com/1190944/220473849-3bb51806-144e-4996-808c-c2c036980afd.png)
+
+## Command line args
+
+You can use command line arguments to pre-populate any of the fields with default values:
+
+- `bitwardenServerUrl=https://bitwarden.company.com`
+- `bitwardenApiKeyClientId=user.guid`
+- `bitwardenApiKeySecret=myApiKeySecret`
+- `bitwardenMasterPassword=my-bitwarden-master-password`
+- `bitwardenKeyConnector=1` (1 = checked)
+- `lastpassEmail=john.doe@company.com`
+- `lastpassMasterPassword=my-lastpass-master-password`
