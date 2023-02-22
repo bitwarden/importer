@@ -15,3 +15,8 @@ You can use command line arguments to pre-populate any of the fields with defaul
 - `bitwardenKeyConnector=1` (1 = checked)
 - `lastpassEmail=john.doe@company.com`
 - `lastpassMasterPassword=my-lastpass-master-password`
+- `lastpassSkipShared=1` (1 = checked)
+
+## Special thanks
+
+A special thank you to the [Password Manager Access](https://github.com/detunized/password-manager-access) library that powers this application.
