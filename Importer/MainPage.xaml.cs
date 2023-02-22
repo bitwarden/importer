@@ -202,10 +202,14 @@ public partial class MainPage : ContentPage
                 PasswordManagerAccess.LastPass.Platform.Desktop,
                 Guid.NewGuid().ToString().ToLower(),
                 "Importer");
-            var vault = Vault.Open(LastPassEmail?.Text, LastPassPassword?.Text, clientInfo, ui);
+            var vault = Vault.Open(LastPassEmail?.Text, LastPassPassword?.Text, clientInfo, ui,
+                new ParserOptions { ParseSecureNotesToAccount = false });
+
+            // Filter accounts
+            var filteredAccounts = vault.Accounts.Where(a => !a.IsShared || (a.IsShared && !LastPassSkipShared.IsChecked));
 
             // Massage it to expected CSV format
-            var exportAccounts = vault.Accounts.Select(a => new Services.LastPass.ExportedAccount(a));
+            var exportAccounts = filteredAccounts.Select(a => new Services.LastPass.ExportedAccount(a));
 
             // Create CSV string
             using var writer = new StringWriter();
@@ -350,13 +354,16 @@ public partial class MainPage : ContentPage
 
     private void ClearInputs()
     {
-        BitwardenServerUrl.Text = string.Empty;
-        BitwardenApiKeyClientId.Text = string.Empty;
-        BitwardenApiKeySecret.Text = string.Empty;
-        BitwardenKeyConnector.IsChecked = false;
-        BitwardenPassword.Text = string.Empty;
-        LastPassEmail.Text = string.Empty;
-        LastPassPassword.Text = string.Empty;
+        Dispatcher.Dispatch(() =>
+        {
+            BitwardenServerUrl.Text = string.Empty;
+            BitwardenApiKeyClientId.Text = string.Empty;
+            BitwardenApiKeySecret.Text = string.Empty;
+            BitwardenKeyConnector.IsChecked = false;
+            BitwardenPassword.Text = string.Empty;
+            LastPassEmail.Text = string.Empty;
+            LastPassPassword.Text = string.Empty;
+        });
     }
 
     private void ParseCommandlineDefaults()
@@ -364,12 +371,12 @@ public partial class MainPage : ContentPage
         var args = Environment.GetCommandLineArgs();
         foreach (var arg in args)
         {
-            if (!arg.Contains("="))
+            if (!arg.Contains('='))
             {
                 continue;
             }
 
-            var argParts = arg.Split('=');
+            var argParts = arg.Split(new[] { '=' }, 2);
             if (argParts.Length < 2)
             {
                 continue;
@@ -414,6 +421,12 @@ public partial class MainPage : ContentPage
             if (argParts[0] == "lastpassMasterPassword")
             {
                 LastPassPassword.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "lastpassSkipShared")
+            {
+                LastPassSkipShared.IsChecked = argParts[1] == "1";
                 continue;
             }
         }

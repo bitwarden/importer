@@ -13,10 +13,10 @@ public class ExportedAccount
         Username = account.Username;
         Password = account.Password;
         // Totp not supported
-        // Extra = account.Notes;
+        Extra = account.Notes;
         Name = account.Name;
         Grouping = account.Path == "(none)" ? null : account.Path;
-        // Fav = account.Favorite == "1" ? 1 : 0;
+        Fav = account.IsFavorite ? 1 : 0;
     }
 
     [Name("url")]

@@ -15,7 +15,7 @@ public partial class App : Application
     {
         var window = base.CreateWindow(activationState);
         window.Width = 650;
-        window.Height = 1100;
+        window.Height = 1150;
         window.Title = "Bitwarden Importer";
         return window;
     }

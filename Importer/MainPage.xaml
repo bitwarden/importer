@@ -121,6 +121,16 @@
                         x:Name="LastPassPassword"
                         IsPassword="True" />
                 </VerticalStackLayout>
+                
+                <HorizontalStackLayout>
+                    <CheckBox
+                        x:Name="LastPassSkipShared"
+                        VerticalOptions="Center" />
+                    <Label
+                        x:Name="LastPassSkipSharedLabel"
+                        Text="Skip items from shared folders"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
             </VerticalStackLayout>
 
             <HorizontalStackLayout
