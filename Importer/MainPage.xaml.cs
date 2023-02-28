@@ -432,7 +432,8 @@ public partial class MainPage : ContentPage
     {
         if (_doLogging)
         {
-            File.AppendAllText(Path.Combine(_cacheDir, "log.txt"), message);
+            File.AppendAllText(Path.Combine(_cacheDir, "log.txt"),
+                $"[{DateTime.UtcNow}] {message}");
         }
     }
 }
