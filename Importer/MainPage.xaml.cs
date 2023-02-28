@@ -6,6 +6,7 @@ namespace Bit.Importer;
 
 public partial class MainPage : ContentPage
 {
+    private readonly bool _doLogging = false;
     private readonly string _cacheDir;
     private readonly List<string> _services = new() { "LastPass" };
     private string _bitwardenCloudUrl = "https://bitwarden.com";
@@ -424,6 +425,14 @@ public partial class MainPage : ContentPage
                 LastPassSkipShared.IsChecked = argParts[1] == "1";
                 continue;
             }
+        }
+    }
+
+    private void Log(string message)
+    {
+        if (_doLogging)
+        {
+            File.AppendAllText(Path.Combine(_cacheDir, "log.txt"), message);
         }
     }
 }
