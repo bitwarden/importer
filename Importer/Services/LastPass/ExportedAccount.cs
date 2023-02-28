@@ -1,8 +1,9 @@
-﻿using CsvHelper.Configuration.Attributes;
-using PasswordManagerAccess.LastPass;
+﻿using PasswordManagerAccess.LastPass;
+using System.Runtime.Serialization;
 
 namespace Bit.Importer.Services.LastPass;
 
+[DataContract]
 public class ExportedAccount
 {
     public ExportedAccount() { }
@@ -12,27 +13,27 @@ public class ExportedAccount
         Url = account.Url;
         Username = account.Username;
         Password = account.Password;
-        // Totp not supported
+        Totp = account.Totp;
         Extra = account.Notes;
         Name = account.Name;
         Grouping = account.Path == "(none)" ? null : account.Path;
         Fav = account.IsFavorite ? 1 : 0;
     }
 
-    [Name("url")]
+    [DataMember(Name = "url")]
     public string Url { get; set; }
-    [Name("username")]
+    [DataMember(Name = "username")]
     public string Username { get; set; }
-    [Name("password")]
+    [DataMember(Name = "password")]
     public string Password { get; set; }
-    [Name("totp")]
+    [DataMember(Name = "totp")]
     public string Totp { get; set; }
-    [Name("extra")]
+    [DataMember(Name = "extra")]
     public string Extra { get; set; }
-    [Name("name")]
+    [DataMember(Name = "name")]
     public string Name { get; set; }
-    [Name("grouping")]
+    [DataMember(Name = "grouping")]
     public string Grouping { get; set; }
-    [Name("fav")]
+    [DataMember(Name = "fav")]
     public int Fav { get; set; }
 }

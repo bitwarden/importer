@@ -1,7 +1,6 @@
-﻿using CsvHelper;
-using PasswordManagerAccess.LastPass;
+﻿using PasswordManagerAccess.LastPass;
+using ServiceStack.Text;
 using System.Diagnostics;
-using System.Globalization;
 
 namespace Bit.Importer;
 
@@ -212,11 +211,7 @@ public partial class MainPage : ContentPage
             var exportAccounts = filteredAccounts.Select(a => new Services.LastPass.ExportedAccount(a));
 
             // Create CSV string
-            using var writer = new StringWriter();
-            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-            csv.WriteRecords(exportAccounts);
-            csv.Flush();
-            var csvOutput = writer.ToString();
+            var csvOutput = CsvSerializer.SerializeToCsv(exportAccounts);
 
             // Write CSV to temp disk
             var lastpassCsvPath = Path.Combine(_cacheDir, "lastpass-export.csv");
