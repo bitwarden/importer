@@ -1,15 +1,18 @@
 ﻿using PasswordManagerAccess.LastPass;
 using ServiceStack.Text;
 using System.Diagnostics;
+using System.IO.Compression;
 
 namespace Bit.Importer;
 
 public partial class MainPage : ContentPage
 {
+    private readonly HttpClient _httpClient = new();
     private readonly bool _doLogging = false;
     private readonly string _cacheDir;
     private readonly List<string> _services = new() { "LastPass" };
     private string _bitwardenCloudUrl = "https://bitwarden.com";
+    private string _cliVersion = "2023.2.0";
 
     public MainPage()
     {
@@ -260,16 +263,33 @@ public partial class MainPage : ContentPage
 
     private async Task SetupCliAsync()
     {
-        // Copy packaged CLI app to disk so that we can invoke it.
+        if (await HasLatestCliAsync())
+        {
+            return;
+        }
+
+        // Download CLI app to disk so that we can invoke it.
+
         var isWindows = DeviceInfo.Platform == DevicePlatform.WinUI;
-        var cliFilename = isWindows ? "bw-windows.exe" : "bw-mac";
+
+        // Hash file
+        var cliHashUrl = string.Format(
+            "https://github.com/bitwarden/clients/releases/download/cli-v{0}/bw-{1}-sha256-{0}.txt",
+            _cliVersion, isWindows ? "windows" : "macos");
+        var cliHashFilename = Path.Combine(_cacheDir, "bw.sha256.txt");
+        await DownloadFileAsync(cliHashUrl, cliHashFilename);
+
+        // Zip file
+        var cliUrl = string.Format("https://github.com/bitwarden/clients/releases/download/cli-v{0}/bw-{1}-{0}.zip",
+            _cliVersion, isWindows ? "windows" : "macos");
+        var cliZipFilename = Path.Combine(_cacheDir, "bw.zip");
         var cliPath = ResolveCliPath();
-        using var stream = await FileSystem.OpenAppPackageFileAsync($"bw-cli/{cliFilename}");
-        using var fileStream = File.Create(cliPath);
-        stream.Seek(0, SeekOrigin.Begin);
-        stream.CopyTo(fileStream);
-        stream.Close();
-        fileStream.Close();
+        await DownloadFileAsync(cliUrl, cliZipFilename);
+
+        // Extract zip
+        ZipFile.ExtractToDirectory(cliZipFilename, _cacheDir, true);
+
+        // macOS permissions
         if (!isWindows)
         {
             ExecBash($"chmod +x {cliPath}");
@@ -317,6 +337,7 @@ public partial class MainPage : ContentPage
     {
         File.Delete(Path.Combine(_cacheDir, "data.json"));
         File.Delete(Path.Combine(_cacheDir, "lastpass-export.csv"));
+        File.Delete(Path.Combine(_cacheDir, "bw.zip"));
         return Task.FromResult(0);
     }
 
@@ -435,5 +456,43 @@ public partial class MainPage : ContentPage
             File.AppendAllText(Path.Combine(_cacheDir, "log.txt"),
                 $"[{DateTime.UtcNow}] {message}");
         }
+    }
+
+    private async Task<bool> HasLatestCliAsync()
+    {
+        var cliHashFilename = Path.Combine(_cacheDir, "bw.sha256.txt");
+        if (!File.Exists(cliHashFilename) || !File.Exists(ResolveCliPath()))
+        {
+            return false;
+        }
+
+        // Read zip hash file on disk
+        using var zipHashStream = File.OpenRead(cliHashFilename);
+        using var zipHashReader = new StreamReader(zipHashStream);
+        var zipHashHex = zipHashReader.ReadToEnd().Trim();
+
+        // Download hash from latest CLI release
+        var cliHashUrl = string.Format(
+            "https://github.com/bitwarden/clients/releases/download/cli-v{0}/bw-{1}-sha256-{0}.txt",
+            _cliVersion, DeviceInfo.Platform == DevicePlatform.WinUI ? "windows" : "macos");
+        using var hashStream = await _httpClient.GetStreamAsync(cliHashUrl);
+        using var reader = new StreamReader(hashStream);
+        var hashHex = reader.ReadToEnd().Trim();
+
+        // Close streams
+        zipHashStream.Close();
+        hashStream.Close();
+
+        // Compare the hashes
+        return string.Equals(zipHashHex, hashHex, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    private async Task DownloadFileAsync(string url, string file)
+    {
+        using var stream = await _httpClient.GetStreamAsync(url);
+        using var fileStream = File.Create(file);
+        await stream.CopyToAsync(fileStream);
+        stream.Close();
+        fileStream.Close();
     }
 }

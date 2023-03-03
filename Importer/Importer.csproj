@@ -52,8 +52,6 @@
 
   <ItemGroup>
     <None Remove="Resources\Images\icon.svg" />
-    <None Remove="Resources\Raw\bw-cli\bw-mac" />
-    <None Remove="Resources\Raw\bw-cli\bw-windows.exe" />
   </ItemGroup>
 
   <ItemGroup>
