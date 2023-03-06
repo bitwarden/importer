@@ -2,6 +2,7 @@
 using ServiceStack.Text;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Security.Cryptography;
 
 namespace Bit.Importer;
 
@@ -285,6 +286,23 @@ public partial class MainPage : ContentPage
         var cliZipFilename = Path.Combine(_cacheDir, "bw.zip");
         var cliPath = ResolveCliPath();
         await DownloadFileAsync(cliUrl, cliZipFilename);
+
+        // Verify checksums
+        using var hashFileStream = File.OpenRead(cliHashFilename);
+        using var hashFileReader = new StreamReader(hashFileStream);
+        var hashFileHex = hashFileReader.ReadToEnd().Trim();
+        hashFileStream.Close();
+
+        using var zipStream = File.OpenRead(cliZipFilename);
+        using var sha256 = SHA256.Create();
+        var zipHashBytes = sha256.ComputeHash(zipStream);
+        var zipHashHex = BitConverter.ToString(zipHashBytes).Replace("-", string.Empty);
+        zipStream.Close();
+
+        if (!string.Equals(zipHashHex, hashFileHex, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new Exception("CLI checksum failed.");
+        }
 
         // Extract zip
         ZipFile.ExtractToDirectory(cliZipFilename, _cacheDir, true);
