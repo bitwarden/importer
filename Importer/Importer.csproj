@@ -33,6 +33,22 @@
     <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
   </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-maccatalyst|AnyCPU'">
+    <CodesignProvision>Bitwarden Importer Developer App No Cat</CodesignProvision>
+    <CodesignKey>Developer ID Application: Bitwarden Inc (LTZ2PFU5D6)</CodesignKey>
+    <PackageSigningKey>Developer ID Installer: Bitwarden Inc (LTZ2PFU5D6)</PackageSigningKey>
+    <ProvisionType>Manual</ProvisionType>
+    <EnableCodeSigning>true</EnableCodeSigning>
+    <CodesignEntitlements>Platforms\MacCatalyst\Entitlements.plist</CodesignEntitlements>
+    <UseHardenedRuntime>true</UseHardenedRuntime>
+    <CreatePackage>true</CreatePackage>
+    <EnablePackageSigning>true</EnablePackageSigning>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-maccatalyst|AnyCPU'">
+    <CreatePackage>false</CreatePackage>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#175DDC" />
