@@ -1,6 +1,6 @@
 # Build the macOS `.app`
 
-1. Run release build of the `Importer.csproj`. Build will fail on the codesign verify step, however, the `Bitwarden Importal.app` will still be built and signed properly.
+1. Run release build of the `Importer.csproj`. Build will fail on the codesign verify step, however, the `Bitwarden Importer.app` will still be built and signed properly.
    ```
    dotnet build -f:net7.0-maccatalyst -c:Release
    ```
