@@ -9,18 +9,26 @@
 
 1. Use the included `notarizer.sh` script to notarize your application.
    ```
-   ./notarizer.sh 
+   ./notarizer.sh --notarize -a "Bitwarden Importer.app" -b com.bitwarden.importer -u <APPLE_ID> -p <APPLE_PASSWORD>
    ```
 
-2. Check the status of the notarization process with Apple by running the chceck command on `notarizer.sh`.
+2. Check the status of the notarization process with Apple by running the check command with `notarizer.sh`. The RequestUUID is available from the response in running the previous command.
    ```
-   ./notarizer.sh 
+   ./notarizer.sh --check -u <APPLE_ID> -p <APPLE_PASSWORD> -k <REQUEST_UUID>
    ```
 
 3. Once notarization is successful, staple the notarized application.
    ```
-   ./notarizer.sh 
+   ./notarizer.sh --staple --file "Bitwarden Importer.app"
    ```
+
+# Build the macOS `.zip` artifact
+
+1. Follow steps for building the macOS `.app`.
+
+2. Notarize the `Bitwarden Importer.app` by following the steps for notarizing a macOS app.
+
+3. Zip up the `Bitwarden Importer.app` file for publishing.
 
 # Build the macOS `.pkg` artifact
 
@@ -30,18 +38,10 @@
 
 3. Create a `.pkg` by using the `productbuild` command.
    ```
-   productbuild
+   productbuild --sign "Developer ID Installer: Bitwarden Inc (LTZ2PFU5D6)" --component "./Bitwarden Importer.app" /Applications "./Bitwarden Importer.pkg"
    ```
 
 4. Notarize the `.pkg` by following the steps for notarizing a macOS app.
-
-# Build the macOS `.zip` artifact
-
-1. Follow steps for building the macOS `.app`.
-
-2. Notarize the `Bitwarden Importer.app` by following the steps for notarizing a macOS app.
-
-3. Zip up the `Bitwarden Importer.app` file for publishing.
 
 # Build the Windows `.msix` artifact
 
