@@ -6,7 +6,7 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
-  <Identity Name="bitwarden-importer" Publisher="CN=8bit Solutions LLC, O=8bit Solutions LLC, L=Jacksonville, S=Florida, C=US, SERIALNUMBER=L16000106119, OID.1.3.6.1.4.1.311.60.2.1.2=Florida, OID.1.3.6.1.4.1.311.60.2.1.3=US, OID.2.5.4.15=Private Organization" Version="1.1.0.0" />
+  <Identity Name="bitwarden-importer" Publisher="CN=8bit Solutions LLC, O=8bit Solutions LLC, L=Jacksonville, S=Florida, C=US, SERIALNUMBER=L16000106119, OID.1.3.6.1.4.1.311.60.2.1.2=Florida, OID.1.3.6.1.4.1.311.60.2.1.3=US, OID.2.5.4.15=Private Organization" Version="1.2.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="569357BF-7B0D-4BDB-B134-0D3A5765BA50" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
