@@ -165,12 +165,6 @@ sign()
 	if [ -z "${APP_NAME}" ]; then
 	    echo "[Error] Didn't specify a filename";
 	fi
-    if [ -z "${SIGNING_IDENTITY}" ]; then
-	    echo "[Error] Didn't specify signing identity";
-	fi
-	if [ -z "${ENTITLEMENTS}" ]; then
-	    echo "[Error] Didn't specify entitlements file";
-	fi
 	if [ -z "${BUNDLE_ID}" ]; then
 	    echo "[Error] Didn't specify bundle identifier";
 	fi
@@ -184,24 +178,24 @@ sign()
 	    echo "[Error] App Specific password is required";
 	fi
 
-	if  [ -z "${APP_NAME}" ] || [ -z "${USERNAME}" ] || [ -z "${PASSWORD}" ] || [ -z "${PROVIDER}" ]  || [ -z "${ENTITLEMENTS}" ] || [ -z "${SIGNING_IDENTITY}" ]; then
+	if  [ -z "${APP_NAME}" ] || [ -z "${USERNAME}" ] || [ -z "${PASSWORD}" ] || [ -z "${PROVIDER}" ]; then
 		echo
 		notarizeHelp
 		exit 1 
 	fi
 
-	echo "[INFO] Signing app contents"
-	find "$APP_NAME/Contents"|while read fname; do
-		if [[ -f $fname ]]; then
-			echo "[INFO] Signing $fname"
-			codesign --force --timestamp --options=runtime --entitlements "$ENTITLEMENTS" --sign "$SIGNING_IDENTITY" $fname
-		fi
-	done
+	#echo "[INFO] Signing app contents"
+	#find "$APP_NAME/Contents"|while read fname; do
+	#	if [[ -f $fname ]]; then
+	#		echo "[INFO] Signing $fname"
+	#		codesign --force --timestamp --options=runtime --entitlements "$ENTITLEMENTS" --sign "$SIGNING_IDENTITY" $fname
+	#	fi
+	#done
 
-	echo "[INFO] Signing app file"
+	#echo "[INFO] Signing app file"
 
 
-	codesign --force --timestamp --options=runtime --entitlements "$ENTITLEMENTS" --sign "$SIGNING_IDENTITY" "$APP_NAME"
+	#codesign --force --timestamp --options=runtime --entitlements "$ENTITLEMENTS" --sign "$SIGNING_IDENTITY" "$APP_NAME"
 
 	echo "[INFO] Verifying Code Sign"
 

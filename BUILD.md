@@ -9,7 +9,7 @@
 
 1. Use the included `notarizer.sh` script to notarize your application.
    ```
-   ./notarizer.sh --notarize -a "Bitwarden Importer.app" -b com.bitwarden.importer -u <APPLE_ID> -p <APPLE_PASSWORD>
+   ./notarizer.sh --notarize -a "Bitwarden Importer.app" -b com.bitwarden.importer -u <APPLE_ID> -p <APPLE_PASSWORD> -v LTZ2PFU5D6
    ```
 
 2. Check the status of the notarization process with Apple by running the check command with `notarizer.sh`. The RequestUUID is available from the response in running the previous command.
