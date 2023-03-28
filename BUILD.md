@@ -9,17 +9,17 @@
 
 1. Use the included `notarizer.sh` script to notarize your application.
    ```
-   ./notarizer.sh --notarize -a "Bitwarden Importer.app" -b com.bitwarden.importer -u <APPLE_ID> -p <APPLE_PASSWORD> -v LTZ2PFU5D6
+   ./notarizer.sh --notarize -a "./Importer/bin/Release/net7.0-maccatalyst/Bitwarden Importer.app" -b com.bitwarden.importer -u $APPLE_ID_USERNAME -p $APPLE_ID_PASSWORD -v LTZ2PFU5D6
    ```
 
 2. Check the status of the notarization process with Apple by running the check command with `notarizer.sh`. The RequestUUID is available from the response in running the previous command.
    ```
-   ./notarizer.sh --check -u <APPLE_ID> -p <APPLE_PASSWORD> -k <REQUEST_UUID>
+   ./notarizer.sh --check -u $APPLE_ID_USERNAME -p $APPLE_ID_PASSWORD -k <REQUEST_UUID>
    ```
 
 3. Once notarization is successful, staple the notarized application.
    ```
-   ./notarizer.sh --staple --file "Bitwarden Importer.app"
+   ./notarizer.sh --staple --file "./Importer/bin/Release/net7.0-maccatalyst/Bitwarden Importer.app"
    ```
 
 # Build the macOS `.zip` artifact
