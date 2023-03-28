@@ -29,12 +29,17 @@ public class Ui : IUi
 
     public OobResult ApproveLastPassAuth()
     {
-        return OobResult.ContinueWithPasscode(PromptCode("Enter passcode from LastPass authenticator."), false);
+        return OobResult.ContinueWithPasscode(PromptCode("Enter passcode from LastPass Authenticator."), false);
     }
 
     public OobResult ApproveDuo()
     {
         return OobResult.ContinueWithPasscode(PromptCode("Enter passcode from Duo."), false);
+    }
+
+    public OobResult ApproveSalesforceAuth()
+    {
+        return OobResult.ContinueWithPasscode(PromptCode("Enter passcode from Salesforce Authenticator."), false);
     }
 
     public DuoChoice ChooseDuoFactor(DuoDevice[] devices)
