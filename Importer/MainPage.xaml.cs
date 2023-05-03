@@ -144,7 +144,7 @@ public partial class MainPage : ContentPage
                     cliSetupSuccess = true;
                 }
             }
-            catch(Exception e)
+            catch
             {
                 StopLoadingAndAlert(true, "Unable to set up Bitwarden CLI.");
             }
