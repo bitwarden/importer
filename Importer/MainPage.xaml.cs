@@ -1,5 +1,6 @@
 ﻿using PasswordManagerAccess.LastPass;
 using ServiceStack.Text;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -12,8 +13,11 @@ public partial class MainPage : ContentPage
     private readonly bool _doLogging = false;
     private readonly string _cacheDir;
     private readonly List<string> _services = new() { "LastPass" };
-    private string _bitwardenCloudUrl = "https://bitwarden.com";
-    private string _cliVersion = "2023.2.0";
+    private readonly string _cliVersion = "2023.4.0";
+    private readonly string _cliBaseDownloadUrl = "https://assets.bitwarden.com/importer";
+    private readonly string _bitwardenCloudUrl = "https://bitwarden.com";
+    private readonly Dictionary<string, int> _twoFactorMethods =
+        new() { { "Authenticator app", 0 }, { "Email", 1 }, { "YubiKey OTP security key", 3 } };
 
     public MainPage()
     {
@@ -52,6 +56,12 @@ public partial class MainPage : ContentPage
         BitwardenPasswordLayout.IsVisible = !BitwardenKeyConnector.IsChecked;
     }
 
+    private void BitwardenApiKeyOption_CheckedChanged(object sender, CheckedChangedEventArgs e)
+    {
+        BitwardenApiKeyLayout.IsVisible = BitwardenApiKeyOption.IsChecked;
+        BitwardenEmailLayout.IsVisible = !BitwardenApiKeyOption.IsChecked;
+    }
+
     private async void OnButtonClicked(object sender, EventArgs e)
     {
         // Validate
@@ -71,10 +81,24 @@ public partial class MainPage : ContentPage
 
     private async Task<bool> ValidateInputsAsync()
     {
-        if (string.IsNullOrWhiteSpace(BitwardenApiKeyClientId?.Text) ||
-            string.IsNullOrWhiteSpace(BitwardenApiKeySecret?.Text))
+        if (BitwardenApiKeyOption.IsChecked &&
+            (string.IsNullOrWhiteSpace(BitwardenApiKeyClientId?.Text) ||
+            string.IsNullOrWhiteSpace(BitwardenApiKeySecret?.Text)))
         {
-            await DisplayAlert("Error", "Bitwarden API Key information is required.", "OK");
+            await DisplayAlert("Error", "Bitwarden API key information is required.", "OK");
+            return false;
+        }
+
+        if (!BitwardenApiKeyOption.IsChecked &&
+            string.IsNullOrWhiteSpace(BitwardenEmail?.Text))
+        {
+            await DisplayAlert("Error", "Bitwarden email is required.", "OK");
+            return false;
+        }
+
+        if (BitwardenKeyConnector.IsChecked && !BitwardenApiKeyOption.IsChecked)
+        {
+            await DisplayAlert("Error", "Bitwarden APIs keys are required when your organization uses SSO.", "OK");
             return false;
         }
 
@@ -121,7 +145,7 @@ public partial class MainPage : ContentPage
                     cliSetupSuccess = true;
                 }
             }
-            catch
+            catch(Exception e)
             {
                 StopLoadingAndAlert(true, "Unable to set up Bitwarden CLI.");
             }
@@ -141,8 +165,17 @@ public partial class MainPage : ContentPage
                 var (loginSuccess, sessionKey) = LogInCli();
                 if (!loginSuccess)
                 {
-                    StopLoadingAndAlert(true,
-                        "Unable to log into your Bitwarden account. Is your API key information correct?");
+                    if (BitwardenApiKeyOption.IsChecked)
+                    {
+                        StopLoadingAndAlert(true,
+                            "Unable to log into your Bitwarden account. Is your API key information correct?");
+                    }
+                    else
+                    {
+                        StopLoadingAndAlert(true,
+                            "Unable to log into your Bitwarden account. " +
+                            "Try logging in using the API key option instead.");
+                    }
                 }
 
                 if (loginSuccess && string.IsNullOrWhiteSpace(sessionKey))
@@ -231,31 +264,81 @@ public partial class MainPage : ContentPage
 
     private bool ConfigServerCli()
     {
-        var (exitCode, stdOut) = ExecCli($"config server {BitwardenServerUrl?.Text}");
+        var (exitCode, stdOut, stdErr) = ExecCli($"config server {BitwardenServerUrl?.Text}");
         return exitCode == 0;
     }
 
     private (bool, string) LogInCli()
     {
-        var (exitCode, sessionKey) = ExecCli("login --apikey --raw", (process) =>
+        var (exitCode, sessionKey, error) = (1, string.Empty, string.Empty);
+        // API key login
+        if (BitwardenApiKeyOption.IsChecked)
         {
-            process.StartInfo.EnvironmentVariables["BW_CLIENTID"] = BitwardenApiKeyClientId?.Text;
-            process.StartInfo.EnvironmentVariables["BW_CLIENTSECRET"] = BitwardenApiKeySecret?.Text;
-            // Avoid BW_NOINTERACTION bug that is issuing invalid session key on api key login
-            process.StartInfo.EnvironmentVariables["BW_NOINTERACTION"] = "false";
-        });
+            (exitCode, sessionKey, error) = ExecCli("login --apikey --raw", (process) =>
+            {
+                process.StartInfo.EnvironmentVariables["BW_CLIENTID"] = BitwardenApiKeyClientId?.Text;
+                process.StartInfo.EnvironmentVariables["BW_CLIENTSECRET"] = BitwardenApiKeySecret?.Text;
+                // Avoid BW_NOINTERACTION bug that is issuing invalid session key on api key login
+                process.StartInfo.EnvironmentVariables["BW_NOINTERACTION"] = "false";
+            });
+        }
+        // Master password login
+        else
+        {
+            var command = string.Format("login {0} {1} --raw", BitwardenEmail?.Text, BitwardenPassword?.Text);
+            (exitCode, sessionKey, error) = ExecCli(command);
+            if (exitCode == 1)
+            {
+                var promptMethod = error.Contains("no provider selected", StringComparison.CurrentCultureIgnoreCase);
+                var promptCode = promptMethod || error.Contains("code is required", StringComparison.CurrentCultureIgnoreCase);
+                int? method = null;
+                string code = null;
+
+                if (promptMethod)
+                {
+                    var methodTask = Dispatcher.DispatchAsync(() =>
+                        DisplayActionSheet("Select Bitwarden 2FA method.", "Cancel", null,
+                        _twoFactorMethods.Keys.ToArray()));
+                    var methodKey = methodTask.GetAwaiter().GetResult();
+                    if (!string.IsNullOrWhiteSpace(methodKey))
+                    {
+                        method = _twoFactorMethods[methodKey];
+                    }
+                }
+
+                if (promptCode)
+                {
+                    var codeTask = Dispatcher.DispatchAsync(() =>
+                        DisplayPromptAsync("Bitwarden Two-step Login", "Enter your two-step login code.", "Submit"));
+                    code = codeTask.GetAwaiter().GetResult();
+                }
+
+                if (method.HasValue)
+                {
+                    command = string.Format("login {0} {1} --method {2} --code {3} --raw",
+                        BitwardenEmail?.Text, BitwardenPassword?.Text, method.Value, code);
+                }
+                else
+                {
+                    command = string.Format("login {0} {1} --code {2} --raw",
+                        BitwardenEmail?.Text, BitwardenPassword?.Text, code);
+                }
+
+                (exitCode, sessionKey, error) = ExecCli(command);
+            }
+        }
         return (exitCode == 0, sessionKey);
     }
 
     private (bool, string) UnlockCli()
     {
-        var (exitCode, sessionKey) = ExecCli($"unlock {BitwardenPassword?.Text} --raw");
+        var (exitCode, sessionKey, error) = ExecCli($"unlock {BitwardenPassword?.Text} --raw");
         return (exitCode == 0, sessionKey);
     }
 
     private bool ImportCli(string importService, string importFilePath, string sessionKey)
     {
-        var (importExitCode, importStdOut) = ExecCli($"import {importService} {importFilePath}", (process) =>
+        var (importExitCode, importStdOut, stdErr) = ExecCli($"import {importService} {importFilePath}", (process) =>
         {
             process.StartInfo.EnvironmentVariables["BW_SESSION"] = sessionKey;
         });
@@ -275,14 +358,14 @@ public partial class MainPage : ContentPage
 
         // Hash file
         var cliHashUrl = string.Format(
-            "https://github.com/bitwarden/clients/releases/download/cli-v{0}/bw-{1}-sha256-{0}.txt",
-            _cliVersion, isWindows ? "windows" : "macos");
+            "{0}/cli-v{1}/bw-{2}-sha256-{1}.txt",
+            _cliBaseDownloadUrl, _cliVersion, isWindows ? "windows" : "macos");
         var cliHashFilename = Path.Combine(_cacheDir, "bw.sha256.txt");
         await DownloadFileAsync(cliHashUrl, cliHashFilename);
 
         // Zip file
-        var cliUrl = string.Format("https://github.com/bitwarden/clients/releases/download/cli-v{0}/bw-{1}-{0}.zip",
-            _cliVersion, isWindows ? "windows" : "macos");
+        var cliUrl = string.Format("{0}/cli-v{1}/bw-{2}-{1}.zip",
+            _cliBaseDownloadUrl, _cliVersion, isWindows ? "windows" : "macos");
         var cliZipFilename = Path.Combine(_cacheDir, "bw.zip");
         var cliPath = ResolveCliPath();
         await DownloadFileAsync(cliUrl, cliZipFilename);
@@ -314,7 +397,7 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private (int, string) ExecCli(string args, Action<Process> processAction = null)
+    private (int, string, string) ExecCli(string args, Action<Process> processAction = null)
     {
         // Set up the process
         using var process = new Process
@@ -325,6 +408,7 @@ public partial class MainPage : ContentPage
                 Arguments = args,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 CreateNoWindow = true
             },
         };
@@ -336,13 +420,18 @@ public partial class MainPage : ContentPage
 
         process.Start();
         var stdOut = "";
+        var stdErr = "";
         while (!process.StandardOutput.EndOfStream)
         {
             stdOut += process.StandardOutput.ReadLine();
         }
+        while (!process.StandardError.EndOfStream)
+        {
+            stdErr += process.StandardError.ReadLine();
+        }
         process.StandardOutput.Close();
         process.WaitForExit();
-        return (process.ExitCode, stdOut.Trim());
+        return (process.ExitCode, stdOut.Trim(), stdErr.Trim());
     }
 
     private string ResolveCliPath()
@@ -392,6 +481,8 @@ public partial class MainPage : ContentPage
         Dispatcher.Dispatch(() =>
         {
             BitwardenServerUrl.Text = string.Empty;
+            BitwardenEmail.Text = string.Empty;
+            BitwardenApiKeyOption.IsChecked = false;
             BitwardenApiKeyClientId.Text = string.Empty;
             BitwardenApiKeySecret.Text = string.Empty;
             BitwardenKeyConnector.IsChecked = false;
@@ -420,6 +511,18 @@ public partial class MainPage : ContentPage
             if (argParts[0] == "bitwardenServerUrl")
             {
                 BitwardenServerUrl.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "bitwardenEmail")
+            {
+                BitwardenEmail.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "bitwardenApiKey")
+            {
+                BitwardenApiKeyOption.IsChecked = argParts[1] == "1";
                 continue;
             }
 
@@ -491,8 +594,8 @@ public partial class MainPage : ContentPage
 
         // Download hash from latest CLI release
         var cliHashUrl = string.Format(
-            "https://github.com/bitwarden/clients/releases/download/cli-v{0}/bw-{1}-sha256-{0}.txt",
-            _cliVersion, DeviceInfo.Platform == DevicePlatform.WinUI ? "windows" : "macos");
+            "{0}/cli-v{1}/bw-{2}-sha256-{1}.txt",
+            _cliBaseDownloadUrl, _cliVersion, DeviceInfo.Platform == DevicePlatform.WinUI ? "windows" : "macos");
         using var hashStream = await _httpClient.GetStreamAsync(cliHashUrl);
         using var reader = new StreamReader(hashStream);
         var hashHex = reader.ReadToEnd().Trim();
