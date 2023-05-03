@@ -1,6 +1,5 @@
 ﻿using PasswordManagerAccess.LastPass;
 using ServiceStack.Text;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Security.Cryptography;
