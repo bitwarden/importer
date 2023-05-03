@@ -32,7 +32,7 @@ public partial class MainPage : ContentPage
         var learnMoreTap = new TapGestureRecognizer();
         learnMoreTap.Tapped += async (s, e) =>
         {
-            await Browser.Default.OpenAsync(new Uri("https://bitwarden.com/help"),
+            await Browser.Default.OpenAsync(new Uri("https://bitwarden.com/help/bitwarden-importer-tool/"),
                 BrowserLaunchMode.SystemPreferred);
         };
         LearnMore.GestureRecognizers.Add(learnMoreTap);
