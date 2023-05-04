@@ -1,9 +1,11 @@
-# Build the macOS `.app`
+# Build the macOS `.app` and `.pkg`
 
-1. Run release build of the `Importer.csproj`. Build will fail on the codesign verify step, however, the `Bitwarden Importer.app` will still be built and signed properly.
+1. Run release build of the `Importer.csproj`.
    ```
    dotnet build -f:net7.0-maccatalyst -c:Release
    ```
+   
+   Results (`.app` and `.pkg`) will be in the `./Importer/bin/Release/net7.0-maccatalyst/` directory.
 
 # Notarize a macOS app
 
@@ -32,16 +34,9 @@
 
 # Build the macOS `.pkg` artifact
 
-1. Clean your bin folder and remove any files created from building and notarizing the `.app` previously.
+1. Follow steps for building the macOS `.pkg`.
 
-2. Follow steps for building the macOS `.app`.
-
-3. Create a `.pkg` by using the `productbuild` command.
-   ```
-   productbuild --sign "Developer ID Installer: Bitwarden Inc (LTZ2PFU5D6)" --component "./Bitwarden Importer.app" /Applications "./Bitwarden Importer.pkg"
-   ```
-
-4. Notarize the `.pkg` by following the steps for notarizing a macOS app.
+2. Notarize the `.pkg` by following the steps for notarizing a macOS app.
 
 # Build the Windows `.msix` artifact
 
