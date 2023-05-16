@@ -566,6 +566,12 @@ public partial class MainPage : ContentPage
                 LastPassSkipShared.IsChecked = argParts[1] == "1";
                 continue;
             }
+
+            if (argParts[0] == "disableLastpassSkipShared")
+            {
+                LastPassSkipShared.IsEnabled = argParts[1] != "1";
+                continue;
+            }
         }
     }
 
