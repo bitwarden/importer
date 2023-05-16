@@ -18,6 +18,7 @@ You can use command line arguments to pre-populate any of the fields with defaul
 - `lastpassEmail=john.doe@company.com`
 - `lastpassMasterPassword=my-lastpass-master-password`
 - `lastpassSkipShared=1` (1 = checked)
+- `disableLastpassSkipShared=1` (1 = disabled)
 
 ## Special thanks
 
