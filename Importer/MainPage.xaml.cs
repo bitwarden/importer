@@ -1,5 +1,6 @@
-﻿using PasswordManagerAccess.LastPass;
-using ServiceStack.Text;
+﻿using Bit.Importer.Services;
+using Bit.Importer.Services.LastPass;
+using Bit.Importer.Services.OnePassword;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -126,80 +127,93 @@ public partial class MainPage : ContentPage
         await SetupAsync();
         await CleanupAsync();
 
+        IImportService importService = null;
         if (_services[Service.SelectedIndex] == "LastPass")
         {
-            var (lastpassSuccess, lastpassCsvPath) = await CreateLastpassCsvAsync();
-            if (!lastpassSuccess)
+            importService = new LastPassImportService(this, _cacheDir,
+                LastPassEmail?.Text, LastPassPassword?.Text, LastPassSkipShared.IsChecked);
+        }
+        else if (_services[Service.SelectedIndex] == "1Password")
+        {
+            importService = new OnePasswordImportService(this, _cacheDir);
+        }
+
+        var (serviceSuccess, importFilePath, importOption) = (false, string.Empty, string.Empty);
+        if (importService != null)
+        {
+            (serviceSuccess, importFilePath, importOption) = await importService.CreateImportFileAsync();
+        }
+
+        if (!serviceSuccess)
+        {
+            StopLoadingAndAlert(true,
+                "Unable to log into your LastPass account. Are your credentials correct?");
+        }
+
+        var cliSetupSuccess = false;
+        try
+        {
+            if (serviceSuccess)
             {
-                StopLoadingAndAlert(true,
-                    "Unable to log into your LastPass account. Are your credentials correct?");
+                await SetupCliAsync();
+                cliSetupSuccess = true;
+            }
+        }
+        catch
+        {
+            StopLoadingAndAlert(true, "Unable to set up Bitwarden CLI.");
+        }
+
+        if (cliSetupSuccess && serviceSuccess)
+        {
+            if (!string.IsNullOrWhiteSpace(BitwardenServerUrl?.Text) && BitwardenServerUrl.Text != "https://bitwarden.com")
+            {
+                var configServerSuccess = ConfigServerCli();
+                if (!configServerSuccess)
+                {
+                    StopLoadingAndAlert(true, "Unable to configure Bitwarden server.");
+                    return;
+                }
             }
 
-            var cliSetupSuccess = false;
-            try
+            var (loginSuccess, sessionKey) = LogInCli();
+            if (!loginSuccess)
             {
-                if (lastpassSuccess)
+                if (BitwardenApiKeyOption.IsChecked)
                 {
-                    await SetupCliAsync();
-                    cliSetupSuccess = true;
+                    StopLoadingAndAlert(true,
+                        "Unable to log into your Bitwarden account. Is your API key information correct?");
+                }
+                else
+                {
+                    StopLoadingAndAlert(true,
+                        "Unable to log into your Bitwarden account. " +
+                        "Try logging in using the API key option instead.");
                 }
             }
-            catch
+
+            if (loginSuccess && string.IsNullOrWhiteSpace(sessionKey))
             {
-                StopLoadingAndAlert(true, "Unable to set up Bitwarden CLI.");
+                var (unlockSuccess, unlockSessionKey) = UnlockCli();
+                sessionKey = unlockSessionKey;
+                if (!unlockSuccess)
+                {
+                    StopLoadingAndAlert(true,
+                        "Unable to unlock your Bitwarden vault. Is your master password correct?");
+                }
             }
 
-            if (cliSetupSuccess && lastpassSuccess)
+            if (!string.IsNullOrWhiteSpace(importFilePath) && !string.IsNullOrWhiteSpace(sessionKey))
             {
-                if (!string.IsNullOrWhiteSpace(BitwardenServerUrl?.Text) && BitwardenServerUrl.Text != "https://bitwarden.com")
+                var importSuccess = ImportCli(importOption, importFilePath, sessionKey);
+                if (importSuccess)
                 {
-                    var configServerSuccess = ConfigServerCli();
-                    if (!configServerSuccess)
-                    {
-                        StopLoadingAndAlert(true, "Unable to configure Bitwarden server.");
-                        return;
-                    }
+                    StopLoadingAndAlert(false, "Your import was successful!");
+                    ClearInputs();
                 }
-
-                var (loginSuccess, sessionKey) = LogInCli();
-                if (!loginSuccess)
+                else
                 {
-                    if (BitwardenApiKeyOption.IsChecked)
-                    {
-                        StopLoadingAndAlert(true,
-                            "Unable to log into your Bitwarden account. Is your API key information correct?");
-                    }
-                    else
-                    {
-                        StopLoadingAndAlert(true,
-                            "Unable to log into your Bitwarden account. " +
-                            "Try logging in using the API key option instead.");
-                    }
-                }
-
-                if (loginSuccess && string.IsNullOrWhiteSpace(sessionKey))
-                {
-                    var (unlockSuccess, unlockSessionKey) = UnlockCli();
-                    sessionKey = unlockSessionKey;
-                    if (!unlockSuccess)
-                    {
-                        StopLoadingAndAlert(true,
-                            "Unable to unlock your Bitwarden vault. Is your master password correct?");
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(lastpassCsvPath) && !string.IsNullOrWhiteSpace(sessionKey))
-                {
-                    var importSuccess = ImportCli("lastpasscsv", lastpassCsvPath, sessionKey);
-                    if (importSuccess)
-                    {
-                        StopLoadingAndAlert(false, "Your import was successful!");
-                        ClearInputs();
-                    }
-                    else
-                    {
-                        StopLoadingAndAlert(true, "Something went wrong with the import.");
-                    }
+                    StopLoadingAndAlert(true, "Something went wrong with the import.");
                 }
             }
         }
@@ -226,39 +240,6 @@ public partial class MainPage : ContentPage
                 await DisplayAlert("Success", message, "OK");
             }
         });
-    }
-
-    private async Task<(bool, string)> CreateLastpassCsvAsync()
-    {
-        try
-        {
-            // Log in and get LastPass data
-            var ui = new Services.LastPass.Ui(this);
-            var clientInfo = new ClientInfo(
-                PasswordManagerAccess.LastPass.Platform.Desktop,
-                Guid.NewGuid().ToString().ToLower(),
-                "Importer");
-            var vault = Vault.Open(LastPassEmail?.Text, LastPassPassword?.Text, clientInfo, ui,
-                new ParserOptions { ParseSecureNotesToAccount = false });
-
-            // Filter accounts
-            var filteredAccounts = vault.Accounts.Where(a => !a.IsShared || (a.IsShared && !LastPassSkipShared.IsChecked));
-
-            // Massage it to expected CSV format
-            var exportAccounts = filteredAccounts.Select(a => new Services.LastPass.ExportedAccount(a));
-
-            // Create CSV string
-            var csvOutput = CsvSerializer.SerializeToCsv(exportAccounts);
-
-            // Write CSV to temp disk
-            var lastpassCsvPath = Path.Combine(_cacheDir, "lastpass-export.csv");
-            await File.WriteAllTextAsync(lastpassCsvPath, csvOutput);
-            return (true, lastpassCsvPath);
-        }
-        catch
-        {
-            return (false, null);
-        }
     }
 
     private bool ConfigServerCli()
