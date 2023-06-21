@@ -5,14 +5,24 @@ namespace Bit.Importer.Services.OnePassword;
 internal class OnePasswordImportService : IImportService
 {
     private const string ImportOptionName = "1passwordmaccsv";
+    private static Random random = new Random();
 
     private readonly MainPage _page;
     private readonly string _cacheDir;
+    private readonly string _email;
+    private readonly string _accountKey;
+    private readonly string _password;
+    private readonly string _domain;
 
-    public OnePasswordImportService(MainPage page, string cacheDir)
+    public OnePasswordImportService(MainPage page, string cacheDir, string email, string accountKey,
+        string password, string domain)
     {
         _page = page;
         _cacheDir = cacheDir;
+        _email = email;
+        _accountKey = accountKey;
+        _password = password;
+        _domain = domain;
     }
 
     public async Task<(bool, string, string)> CreateImportFileAsync()
@@ -22,11 +32,12 @@ internal class OnePasswordImportService : IImportService
             var ui = new Ui(_page);
             var clientInfo = new ClientInfo
             {
-                Username = "",
-                Password = "",
-                AccountKey = "",
-                Uuid = Guid.NewGuid().ToString().ToLower(),
-                Domain = "",
+                Username = _email,
+                Password = _password,
+                AccountKey = _accountKey,
+                Uuid = RandomString(26).ToLower(),
+                Domain = string.IsNullOrWhiteSpace(_domain) ?
+                    PasswordManagerAccess.OnePassword.Region.Global.ToDomain() : _domain,
                 DeviceName = "Importer",
                 DeviceModel = "1.0.0",
             };
@@ -54,9 +65,16 @@ internal class OnePasswordImportService : IImportService
 
             return (true, "", ImportOptionName);
         }
-        catch
+        catch (Exception e)
         {
             return (false, null, ImportOptionName);
         }
+    }
+
+    private static string RandomString(int length)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        return new string(Enumerable.Repeat(chars, length)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 }

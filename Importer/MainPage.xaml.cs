@@ -12,7 +12,7 @@ public partial class MainPage : ContentPage
     private readonly HttpClient _httpClient = new();
     private readonly bool _doLogging = false;
     private readonly string _cacheDir;
-    private readonly List<string> _services = new() { "LastPass" };
+    private readonly List<string> _services = new() { "LastPass", "1Password" };
     private readonly string _cliVersion = "2023.4.0";
     private readonly string _cliBaseDownloadUrl = "https://assets.bitwarden.com/importer";
     private readonly string _bitwardenCloudUrl = "https://bitwarden.com";
@@ -79,6 +79,12 @@ public partial class MainPage : ContentPage
         await Task.Run(ImportAsync);
     }
 
+    private void Service_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        LastPassLayout.IsVisible = _services[Service.SelectedIndex] == "LastPass";
+        OnePasswordLayout.IsVisible = _services[Service.SelectedIndex] == "1Password";
+    }
+
     private async Task<bool> ValidateInputsAsync()
     {
         if (BitwardenApiKeyOption.IsChecked &&
@@ -119,6 +125,18 @@ public partial class MainPage : ContentPage
             }
         }
 
+        if (_services[Service.SelectedIndex] == "1Password")
+        {
+            if (string.IsNullOrWhiteSpace(OnePasswordEmail?.Text) ||
+                string.IsNullOrWhiteSpace(OnePasswordSecretKey?.Text) ||
+                string.IsNullOrWhiteSpace(OnePasswordDomain?.Text) ||
+                string.IsNullOrWhiteSpace(OnePasswordPassword?.Text))
+            {
+                await DisplayAlert("Error", "1Password information is required.", "OK");
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -128,14 +146,17 @@ public partial class MainPage : ContentPage
         await CleanupAsync();
 
         IImportService importService = null;
-        if (_services[Service.SelectedIndex] == "LastPass")
+        var serviceSelection = _services[Service.SelectedIndex];
+        if (serviceSelection == "LastPass")
         {
             importService = new LastPassImportService(this, _cacheDir,
                 LastPassEmail?.Text, LastPassPassword?.Text, LastPassSkipShared.IsChecked);
         }
-        else if (_services[Service.SelectedIndex] == "1Password")
+        else if (serviceSelection == "1Password")
         {
-            importService = new OnePasswordImportService(this, _cacheDir);
+            importService = new OnePasswordImportService(this, _cacheDir,
+                OnePasswordEmail?.Text, OnePasswordSecretKey?.Text, OnePasswordPassword?.Text,
+                OnePasswordDomain?.Text);
         }
 
         var (serviceSuccess, importFilePath, importOption) = (false, string.Empty, string.Empty);
@@ -147,7 +168,7 @@ public partial class MainPage : ContentPage
         if (!serviceSuccess)
         {
             StopLoadingAndAlert(true,
-                "Unable to log into your LastPass account. Are your credentials correct?");
+                $"Unable to log into your {serviceSelection} account. Are your credentials correct?");
         }
 
         var cliSetupSuccess = false;
@@ -423,7 +444,7 @@ public partial class MainPage : ContentPage
     private Task CleanupAsync()
     {
         File.Delete(Path.Combine(_cacheDir, "data.json"));
-        File.Delete(Path.Combine(_cacheDir, "lastpass-export.csv"));
+        File.Delete(Path.Combine(_cacheDir, "export.csv"));
         File.Delete(Path.Combine(_cacheDir, "bw.zip"));
         return Task.FromResult(0);
     }
@@ -469,6 +490,10 @@ public partial class MainPage : ContentPage
             BitwardenPassword.Text = string.Empty;
             LastPassEmail.Text = string.Empty;
             LastPassPassword.Text = string.Empty;
+            OnePasswordEmail.Text = string.Empty;
+            OnePasswordPassword.Text = string.Empty;
+            OnePasswordSecretKey.Text = string.Empty;
+            OnePasswordDomain.Text = string.Empty;
         });
     }
 
@@ -551,6 +576,30 @@ public partial class MainPage : ContentPage
             if (argParts[0] == "disableLastpassSkipShared")
             {
                 LastPassSkipShared.IsEnabled = argParts[1] != "1";
+                continue;
+            }
+
+            if (argParts[0] == "1passwordEmail")
+            {
+                OnePasswordEmail.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "1passwordPassword")
+            {
+                OnePasswordPassword.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "1passwordSecretKey")
+            {
+                OnePasswordSecretKey.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "1passwordDomain")
+            {
+                OnePasswordDomain.Text = argParts[1];
                 continue;
             }
         }

@@ -128,37 +128,87 @@
                     <Label
                         Text="Import From Service" />
                     <Picker
-                        x:Name="Service" />
+                        x:Name="Service"
+                        SelectedIndexChanged="Service_SelectedIndexChanged" />
                 </VerticalStackLayout>
 
                 <VerticalStackLayout
-                    Spacing="5"
-                    Padding="0">
-                    <Label
-                        Text="LastPass Email" />
-                    <Entry
-                        x:Name="LastPassEmail" />
-                </VerticalStackLayout>
+                    Spacing="20"
+                    Padding="0"
+                    x:Name="LastPassLayout">
+                    <VerticalStackLayout
+                        Spacing="5"
+                        Padding="0">
+                        <Label
+                            Text="LastPass Email" />
+                        <Entry
+                            x:Name="LastPassEmail" />
+                    </VerticalStackLayout>
 
-                <VerticalStackLayout
-                    Spacing="5"
-                    Padding="0">
-                    <Label
-                        Text="LastPass Master Password" />
-                    <Entry
-                        x:Name="LastPassPassword"
-                        IsPassword="True" />
+                    <VerticalStackLayout
+                        Spacing="5"
+                        Padding="0">
+                        <Label
+                            Text="LastPass Master Password" />
+                        <Entry
+                            x:Name="LastPassPassword"
+                            IsPassword="True" />
+                    </VerticalStackLayout>
+
+                    <HorizontalStackLayout>
+                        <CheckBox
+                            x:Name="LastPassSkipShared"
+                            VerticalOptions="Center" />
+                        <Label
+                            x:Name="LastPassSkipSharedLabel"
+                            Text="Skip items from shared folders"
+                            VerticalOptions="Center" />
+                    </HorizontalStackLayout>
                 </VerticalStackLayout>
                 
-                <HorizontalStackLayout>
-                    <CheckBox
-                        x:Name="LastPassSkipShared"
-                        VerticalOptions="Center" />
-                    <Label
-                        x:Name="LastPassSkipSharedLabel"
-                        Text="Skip items from shared folders"
-                        VerticalOptions="Center" />
-                </HorizontalStackLayout>
+                <VerticalStackLayout
+                    Spacing="20"
+                    Padding="0"
+                    x:Name="OnePasswordLayout"
+                    IsVisible="false">
+                    <VerticalStackLayout
+                        Spacing="5"
+                        Padding="0">
+                        <Label
+                            Text="1Password Email" />
+                        <Entry
+                            x:Name="OnePasswordEmail" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                        Spacing="5"
+                        Padding="0">
+                        <Label
+                            Text="1Password Secret Key" />
+                        <Entry
+                            x:Name="OnePasswordSecretKey" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                        Spacing="5"
+                        Padding="0">
+                        <Label
+                            Text="1Password Password" />
+                        <Entry
+                            x:Name="OnePasswordPassword"
+                            IsPassword="True" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                        Spacing="5"
+                        Padding="0">
+                        <Label
+                            Text="1Password Domain" />
+                        <Entry
+                            x:Name="OnePasswordDomain"
+                            Text="my.1password.com" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
             </VerticalStackLayout>
 
             <HorizontalStackLayout
