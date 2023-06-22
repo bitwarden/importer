@@ -5,7 +5,7 @@ namespace Bit.Importer.Services.LastPass;
 public class Ui : BaseUi, IUi
 {
     public Ui(MainPage page)
-        : base(page) { }
+        : base(page, "LastPass") { }
 
     public OtpResult ProvideGoogleAuthPasscode()
     {

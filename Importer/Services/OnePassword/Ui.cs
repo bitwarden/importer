@@ -5,7 +5,7 @@ namespace Bit.Importer.Services.OnePassword;
 public class Ui : BaseUi, IUi
 {
     public Ui(MainPage page)
-        : base(page) { }
+        : base(page, "1Password") { }
 
     public Passcode ProvideGoogleAuthPasscode()
     {

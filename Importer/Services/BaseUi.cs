@@ -5,10 +5,12 @@ namespace Bit.Importer.Services;
 public class BaseUi : IDuoUi
 {
     private readonly MainPage _page;
+    private readonly string _serviceName;
 
-    public BaseUi(MainPage page)
+    public BaseUi(MainPage page, string serviceName)
     {
         _page = page;
+        _serviceName = serviceName;
     }
 
     public DuoChoice ChooseDuoFactor(DuoDevice[] devices)
@@ -33,7 +35,7 @@ public class BaseUi : IDuoUi
     protected string PromptCode(string message)
     {
         var task = _page.Dispatcher.DispatchAsync(() =>
-            _page.DisplayPromptAsync("LastPass Two-step Login", message, "Submit"));
+            _page.DisplayPromptAsync($"{_serviceName} Two-step Login", message, "Submit"));
         return task.GetAwaiter().GetResult();
     }
 }

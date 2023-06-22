@@ -46,9 +46,9 @@ public class LastPassImportService : IImportService
             var csvOutput = CsvSerializer.SerializeToCsv(exportAccounts);
 
             // Write CSV to temp disk
-            var lastpassCsvPath = Path.Combine(_cacheDir, "export.csv");
-            await File.WriteAllTextAsync(lastpassCsvPath, csvOutput);
-            return (true, lastpassCsvPath, ImportOptionName);
+            var csvPath = Path.Combine(_cacheDir, "export.csv");
+            await File.WriteAllTextAsync(csvPath, csvOutput);
+            return (true, csvPath, ImportOptionName);
         }
         catch
         {

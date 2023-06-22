@@ -208,6 +208,15 @@
                             x:Name="OnePasswordDomain"
                             Text="my.1password.com" />
                     </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                        Spacing="5"
+                        Padding="0">
+                        <Label
+                            Text="1Password Excluded Vault Names (CSV)" />
+                        <Entry
+                            x:Name="OnePasswordExcludedVaults" />
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
             </VerticalStackLayout>
 

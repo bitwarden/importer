@@ -156,7 +156,7 @@ public partial class MainPage : ContentPage
         {
             importService = new OnePasswordImportService(this, _cacheDir,
                 OnePasswordEmail?.Text, OnePasswordSecretKey?.Text, OnePasswordPassword?.Text,
-                OnePasswordDomain?.Text);
+                OnePasswordDomain?.Text, OnePasswordExcludedVaults.Text);
         }
 
         var (serviceSuccess, importFilePath, importOption) = (false, string.Empty, string.Empty);
@@ -494,6 +494,7 @@ public partial class MainPage : ContentPage
             OnePasswordPassword.Text = string.Empty;
             OnePasswordSecretKey.Text = string.Empty;
             OnePasswordDomain.Text = string.Empty;
+            OnePasswordExcludedVaults.Text = string.Empty;
         });
     }
 
@@ -600,6 +601,12 @@ public partial class MainPage : ContentPage
             if (argParts[0] == "1passwordDomain")
             {
                 OnePasswordDomain.Text = argParts[1];
+                continue;
+            }
+
+            if (argParts[0] == "1passwordExcludedVaults")
+            {
+                OnePasswordExcludedVaults.Text = argParts[1];
                 continue;
             }
         }
