@@ -202,15 +202,10 @@ project.lock.json
 mail_dist/
 *.refactorlog
 *.scmp
-src/Core/Properties/launchSettings.json
 *.override.env
 **/*.DS_Store
-src/Admin/wwwroot/lib
-src/Admin/wwwroot/css
 .vscode/*
 **/.vscode/*
-bitwarden_license/src/Sso/wwwroot/lib
-bitwarden_license/src/Sso/wwwroot/css
 .github/test/build.secrets
 **/CoverageOutput/
 .idea/*

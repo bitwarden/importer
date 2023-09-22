@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Importer", "Importer\Importer.csproj", "{46E1189D-8B50-4C55-A443-F4B1BBFF7504}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Importer", "src\Importer\Importer.csproj", "{46E1189D-8B50-4C55-A443-F4B1BBFF7504}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

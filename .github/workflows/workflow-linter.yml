@@ -1,0 +1,17 @@
+---
+name: Workflow linter
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/**
+
+permissions: read-all
+
+jobs:
+  call-workflow:
+    uses: bitwarden/gh-actions/.github/workflows/workflow-linter.yml@67ab95d7a466bcefdedf3f93cbc10bcff436edfe
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
