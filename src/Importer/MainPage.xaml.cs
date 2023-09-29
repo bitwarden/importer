@@ -1,4 +1,4 @@
-﻿using Bit.Importer.Services;
+using Bit.Importer.Services;
 using Bit.Importer.Services.LastPass;
 using Bit.Importer.Services.OnePassword;
 using System.Diagnostics;
@@ -12,7 +12,7 @@ public partial class MainPage : ContentPage
     private readonly HttpClient _httpClient = new();
     private readonly bool _doLogging = false;
     private readonly string _cacheDir;
-    private readonly List<string> _services = new() { "LastPass", "1Password" };
+    private readonly List<string> _services = new() { "LastPass"/*, "1Password"*/ };
     private readonly string _cliVersion = "2023.4.0";
     private readonly string _cliBaseDownloadUrl = "https://assets.bitwarden.com/importer";
     private readonly string _bitwardenCloudUrl = "https://bitwarden.com";
@@ -28,6 +28,7 @@ public partial class MainPage : ContentPage
         BitwardenServerUrl.Text = _bitwardenCloudUrl;
         Service.ItemsSource = _services;
         Service.SelectedIndex = 0;
+        Service.IsVisible = ServiceLabel.IsVisible = _services.Count > 1;
 
         var learnMoreTap = new TapGestureRecognizer();
         learnMoreTap.Tapped += async (s, e) =>
