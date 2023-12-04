@@ -1,3 +1,7 @@
+> **Archived**
+>
+> This repository is archived. Please go to https://bitwarden.com/help/import-from-lastpass/ for information on directly importing from LastPass.
+
 # Bitwarden Importer
 
 The Bitwarden Importer utility can be used to migrate individual vaults from another password management service, such as LastPass, without having to deal with the typical export process requiring CSV files. Just enter your credentials from Bitwarden and the old password management service and you're done!
