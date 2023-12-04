@@ -75,8 +75,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-    <PackageReference Include="PasswordManagerAccess" Version="12.0.0" />
-    <PackageReference Include="ServiceStack.Text" Version="6.7.0" />
+    <PackageReference Include="PasswordManagerAccess" Version="12.3.0" />
+    <PackageReference Include="ServiceStack.Text" Version="6.11.0" />
   </ItemGroup>
 
 </Project>
